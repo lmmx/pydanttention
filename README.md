@@ -12,3 +12,5 @@ Transformer model attention in Pydantic.
 Adapted from the source by Theia Vogel (MIT licensed, included here as `vogel_manual_transformer.py`):
 
 - [I made a transformer by hand (no training!)](https://vgel.me/posts/handmade-transformer/) (2023)
+
+In turn using model ops from [picoGPT](https://github.com/jaymody/picoGPT/blob/main/gpt2.py) (MIT license)
