@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pydantic import BaseModel
 
 import numpy as np
 
@@ -8,8 +9,7 @@ __all__ = [
     "attention",
     "causal_self_attention",
     "transformer_block",
-    "gpt",
-    "tokenize",
+    "GPT",
 ]
 
 
@@ -55,18 +55,20 @@ def transformer_block(x, attn):
     return x
 
 
-# [n_seq] -> [n_seq, n_vocab]
-def gpt(inputs, wte, wpe, blocks):
-    # token + positional embeddings
-    x = wte[inputs] + wpe[range(len(inputs))]  # [n_seq] -> [n_seq, n_embd]
+class GPT(BaseModel, arbitrary_types_allowed=True):
+    inputs: np.ndarray
+    wte: np.ndarray
+    wpe: np.ndarray
+    blocks: list
+    """
+    [n_seq] -> [n_seq, n_vocab]
+    """
 
-    # forward pass through n_layer transformer blocks
-    for block in blocks:
-        x = transformer_block(x, **block)  # [n_seq, n_embd] -> [n_seq, n_embd]
-
-    # projection to vocab
-    return x @ wte.T  # [n_seq, n_embd] -> [n_seq, n_vocab]
-
-
-def tokenize(s, vocab: list[str]):
-    return [vocab.index(c) for c in s]
+    def transform(self):
+        # token + positional embeddings: [n_seq] -> [n_seq, n_embd]
+        x = self.wte[self.inputs] + self.wpe[range(len(self.inputs))]
+        # forward pass through n_layer transformer blocks
+        for block in self.blocks:
+            x = transformer_block(x, **block)  # [n_seq, n_embd] -> [n_seq, n_embd]
+        # projection to vocab
+        return x @ self.wte.T  # [n_seq, n_embd] -> [n_seq, n_vocab]

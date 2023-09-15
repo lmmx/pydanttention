@@ -6,7 +6,7 @@ import numpy as np
 from pydantic import BaseModel, Field, computed_field
 
 from .config import Config
-from .sources import gpt, softmax, tokenize
+from .sources import GPT, softmax
 
 __all__ = ["ManualTransformer"]
 
@@ -34,6 +34,7 @@ class ManualTransformer(BaseModel):
     correct: int = 0
     report: bool = False
     logs: list[str] = []
+    config: Config = Config()
 
     def run(self) -> None:
         for i in range(2, len(self.test) - 1):
@@ -58,20 +59,32 @@ class ManualTransformer(BaseModel):
 
     def log(self, log_entry: str) -> None:
         self.logs.append(log_entry)
+        if self.report:
+            print(self.logs[-1])
         return
 
-    def predict(self, s, report=True):
-        tokens = self.tokenize(s)[-5:]
-        model_kwargs = Config().model_dump(include=["inputs", "wte", "wpe", "blocks"])
-        logits = gpt(np.array(tokens), **model_kwargs)
+    def make_token(self, idx: int) -> Token:
+        return Token(idx=idx, vocab=self.vocab)
+
+    def gpt(self, tokens: list[int]):
+        gpt = GPT(inputs=np.array(tokens), **self.config.model_dump())
+        logits = gpt.transform()
+        return logits
+
+    def tokenize(self, string: str) -> list[int]:
+        ctx_tail = -(self.config.N_CTX)
+        tail = string[ctx_tail:]
+        return [self.vocab.index(char) for char in tail]
+
+    def predict(self, string: s) -> int:
+        tokens = self.tokenize(string)
+        logits = self.gpt(tokens)
         probs = softmax(logits)
-        for i, current_idx in enumerate(tokens):
-            token_probs = probs[i]
+        for i, (current_idx, token_probs, raw_logits) in enumerate(
+            zip(tokens, probs, logits)
+        ):
             next_idx = np.argmax(token_probs)
-            current = Token(idx=current_idx, vocab=self.vocab)
-            pred = Token(idx=next_idx, vocab=self.vocab)
-            raw_logits = logits[i]
+            current, pred = map(self.make_token, (current_idx, next_idx))
             self.log(f"{current}: next={pred} probs={token_probs} logits={raw_logits}")
-            if report:
-                print(self.logs[-1])
-        return np.argmax(probs[-1])
+        most_probable_next_token_idx = np.argmax(probs[-1])
+        return most_probable_next_token_idx
