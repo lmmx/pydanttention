@@ -12,16 +12,19 @@ __all__ = ["ManualTransformer"]
 
 
 class Token(BaseModel):
-    tok: int
+    idx: int
     vocab: list[str] = Field(repr=False)
 
     def decode(self) -> str:
-        return self.vocab[self.tok]
+        return self.vocab[self.idx]
 
     @computed_field
     @cached_property
     def char(self) -> str:
         return self.decode()
+
+    def __str__(self) -> str:
+        return f"{self.char} ({self.idx})"
 
 
 class ManualTransformer(BaseModel):
@@ -30,6 +33,7 @@ class ManualTransformer(BaseModel):
     total: int = 0
     correct: int = 0
     report: bool = False
+    logs: list[str] = []
 
     def run(self) -> None:
         for i in range(2, len(self.test) - 1):
@@ -38,27 +42,35 @@ class ManualTransformer(BaseModel):
             self.total += 1
             if self.untok(self.predict(ctx)) == expected:
                 self.correct += 1
+        self.send_report()
+
+    def send_report(self) -> None:
         if self.report:
             pct = self.correct / self.total * 100
             print(f"ACCURACY: {pct}% ({self.correct} / {self.total})")
+        return
 
-    def untok(self, tok):
-        return self.vocab[tok]
+    def untok(self, tok_idx: int) -> str:
+        return self.vocab[tok_idx]
+
+    def tokenize(self, value: str):
+        return tokenize(value, vocab=self.vocab)
+
+    def log(self, log_entry: str) -> None:
+        self.logs.append(log_entry)
+        return
 
     def predict(self, s, report=True):
-        tokens = tokenize(s)[-5:]
+        tokens = self.tokenize(s)[-5:]
         logits = gpt(np.array(tokens), **MODEL)
         probs = softmax(logits)
-        if report:
-            for i, current_token in enumerate(tokens):
-                prob_values = probs[i]
-                predicted_next_token = np.argmax(prob_values)
-                pred_str = self.untok(predicted_next_token)
-                token_str = self.untok(current_token)
-                logit_values = logits[i]
-                token_repr = f"{token_str} ({current_token})"
-                pred_repr = f"next={pred_str} ({predicted_next_token})"
-                probs_repr = f"probs={prob_values}"
-                logits_repr = f"logits={logit_values}"
-                print(f"{token_repr}: {pred_repr} {probs_repr} {logits_repr}")
+        for i, current_idx in enumerate(tokens):
+            token_probs = probs[i]
+            next_idx = np.argmax(token_probs)
+            current = Token(idx=current_idx, vocab=self.vocab)
+            pred = Token(idx=next_idx, vocab=self.vocab)
+            raw_logits = logits[i]
+            self.log(f"{current}: next={pred} probs={token_probs} logits={raw_logits}")
+            if report:
+                print(self.logs[-1])
         return np.argmax(probs[-1])

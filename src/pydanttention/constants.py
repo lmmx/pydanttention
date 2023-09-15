@@ -1,8 +1,6 @@
 import numpy as np
 
-__all__ = ["CHARS", "N_CTX", "N_VOCAB", "N_EMBED", "Lg", "MODEL"]
-
-CHARS = ["a", "b"]
+__all__ = ["N_CTX", "N_VOCAB", "N_EMBED", "Lg", "MODEL"]
 
 N_CTX = 5
 N_VOCAB = 2

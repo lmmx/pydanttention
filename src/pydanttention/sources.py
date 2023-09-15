@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from .constants import CHARS
-
 __all__ = [
     "softmax",
     "linear",
@@ -70,5 +68,5 @@ def gpt(inputs, wte, wpe, blocks):
     return x @ wte.T  # [n_seq, n_embd] -> [n_seq, n_vocab]
 
 
-def tokenize(s):
-    return [CHARS.index(c) for c in s]
+def tokenize(s, vocab: list[str]):
+    return [vocab.index(c) for c in s]
