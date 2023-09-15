@@ -1,28 +1,31 @@
 import numpy as np
+from pydantic import BaseModel
 
-__all__ = ["N_CTX", "N_VOCAB", "N_EMBED", "Lg", "MODEL"]
+__all__ = ["Config"]
 
-N_CTX = 5
-N_VOCAB = 2
-N_EMBED = 8
 
-Lg = 1024  # Large
+class Config(BaseModel, arbitrary_types_allowed=True):
+    """
+    EMBEDDING USAGE
+     P = Position embeddings (one-hot)
+     T = Token embeddings (one-hot, first is `a`, second is `b`)
+     V = Prediction scratch space
 
-MODEL = {
-    # EMBEDDING USAGE
-    #  P = Position embeddings (one-hot)
-    #  T = Token embeddings (one-hot, first is `a`, second is `b`)
-    #  V = Prediction scratch space
-    #
-    #       [P, P, P, P, P, T, T, V]
-    "wte": np.array(
+    [P, P, P, P, P, T, T, V]
+    """
+
+    N_CTX: int = 5
+    N_VOCAB: int = 2
+    N_EMBED: int = 8
+    Lg: int = 1024  # Large
+    wte: np.ndarray = np.array(
         # one-hot token embeddings
         [
             [0, 0, 0, 0, 0, 1, 0, 0],  # token `a` (id 0)
             [0, 0, 0, 0, 0, 0, 1, 0],  # token `b` (id 1)
         ],
-    ),
-    "wpe": np.array(
+    )
+    wpe: np.ndarray = np.array(
         # one-hot position embeddings
         [
             [1, 0, 0, 0, 0, 0, 0, 0],  # position 0
@@ -31,8 +34,8 @@ MODEL = {
             [0, 0, 0, 1, 0, 0, 0, 0],  # position 3
             [0, 0, 0, 0, 1, 0, 0, 0],  # position 4
         ],
-    ),
-    "blocks": [
+    )
+    blocks: list = [
         {
             "attn": {
                 "c_attn": {  # generates qkv matrix
@@ -102,5 +105,4 @@ MODEL = {
                 },
             },
         },
-    ],
-}
+    ]

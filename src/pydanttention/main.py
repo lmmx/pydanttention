@@ -5,7 +5,7 @@ from functools import cached_property
 import numpy as np
 from pydantic import BaseModel, Field, computed_field
 
-from .constants import MODEL
+from .config import Config
 from .sources import gpt, softmax, tokenize
 
 __all__ = ["ManualTransformer"]
@@ -62,7 +62,8 @@ class ManualTransformer(BaseModel):
 
     def predict(self, s, report=True):
         tokens = self.tokenize(s)[-5:]
-        logits = gpt(np.array(tokens), **MODEL)
+        model_kwargs = Config().model_dump(include=["inputs", "wte", "wpe", "blocks"])
+        logits = gpt(np.array(tokens), **model_kwargs)
         probs = softmax(logits)
         for i, current_idx in enumerate(tokens):
             token_probs = probs[i]
