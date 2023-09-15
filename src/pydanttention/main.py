@@ -5,7 +5,7 @@ from functools import cached_property
 import numpy as np
 from pydantic import BaseModel, Field, computed_field
 
-from .constants import CHARS, MODEL
+from .constants import MODEL
 from .sources import gpt, softmax, tokenize
 
 __all__ = ["ManualTransformer"]
