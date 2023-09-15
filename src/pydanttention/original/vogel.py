@@ -199,7 +199,7 @@ def complete(s, max_new_tokens=10):
     return s + " :: " + "".join(untok(t) for t in tokens[len(s) :])
 
 
-class ManualTransformer:
+class VogelManualTransformer:
     def __init__(self, report=False):
         self.test = "aab" * 10
         self.total, self.correct = 0, 0
@@ -216,4 +216,4 @@ class ManualTransformer:
 
 
 if __name__ == "__main__":
-    ManualTransformer(report=True)
+    VogelManualTransformer(report=True)

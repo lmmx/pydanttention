@@ -1,6 +1,6 @@
-from pydanttention.vogel_manual_transformer import ManualTransformer
+from pydanttention.original.vogel import VogelManualTransformer
 
 
 def test_original_implementation():
-    original_run = ManualTransformer()
+    original_run = VogelManualTransformer()
     assert original_run.correct == original_run.total == 27
