@@ -66,10 +66,12 @@ class ManualTransformer(BaseModel):
     def make_token(self, idx: int) -> Token:
         return Token(idx=idx, vocab=self.vocab)
 
-    def gpt(self, tokens: list[int]):
-        gpt = GPT(inputs=np.array(tokens), **self.config.model_dump())
-        logits = gpt.transform()
+    def generate(self, tokens: list[int]):
+        logits = GPT(inputs=np.array(tokens), **self.config.model_dump()).generate()
         return logits
+
+    def normalise(self, x):
+        return Softmax(x=x).normalise()
 
     def tokenize(self, string: str) -> list[int]:
         ctx_tail = -(self.config.N_CTX)
@@ -78,8 +80,8 @@ class ManualTransformer(BaseModel):
 
     def predict(self, string: s) -> int:
         tokens = self.tokenize(string)
-        logits = self.gpt(tokens)
-        probs = Softmax(x=logits).normalise()
+        logits = self.generate(tokens)
+        probs = self.normalise(logits)
         for i, (current_idx, token_probs, raw_logits) in enumerate(
             zip(tokens, probs, logits)
         ):
