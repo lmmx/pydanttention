@@ -1,6 +1,6 @@
 # pydanttention
 
-![PyPI](https://img.shields.io/pypi/v/pydanttention?logo=python&logoColor=%23cccccc)
+[![PyPI](https://img.shields.io/pypi/v/pydanttention?logo=python&logoColor=%23cccccc)](https://pypi.org/project/pydanttention)
 [![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/pydanttention/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/pydanttention/master)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/pydanttention.svg)](https://pypi.org/project/pydanttention)
@@ -42,6 +42,33 @@ Rewriting AI model source code as Pydantic data models is an interesting exercis
   Since Pydantic allows you to load ("validate") typed data models from these primitive types, we
   could supply the original dictionary primitive to `AttentionBlock.model_validate` and it'd still work
   (but doing so is actually more verbose than just constructing the model class directly).
+
+## Installation
+
+```
+pip install pydanttention
+```
+
+## Usage
+
+```
+from pydanttention import Transformer
+
+model = Transformer(report=True)
+model.run()
+```
+
+This will reproduce the results of the demo from the original blog post:
+
+```
+...
+b (1): next=a (0) probs=[1. 0.] logits=[1.024e+03 1.000e+00]
+a (0): next=a (0) probs=[1. 0.] logits=[1025.    0.]
+ACCURACY: 100.0% (27 / 27)
+```
+
+See `.main:Transformer` and `models.config:Config` for the available options that can be set on `Transformer`.
+
 
 ## Development
 
