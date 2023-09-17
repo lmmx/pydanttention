@@ -119,6 +119,6 @@ class Config(BaseModel, arbitrary_types_allowed=True):
                         ],
                     ),
                 ),
-            )
-        )
+            ),
+        ),
     ]

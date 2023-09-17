@@ -1,30 +1,14 @@
 from __future__ import annotations
 
-from functools import cached_property
-
 import numpy as np
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel
 
 from .config import Config
-from .sources import GPT, Softmax
+from .models.ops.main import GPT
+from .models.ops.simple import Softmax
+from .models.tokens import Token
 
 __all__ = ["ManualTransformer"]
-
-
-class Token(BaseModel):
-    idx: int
-    vocab: list[str] = Field(repr=False)
-
-    def decode(self) -> str:
-        return self.vocab[self.idx]
-
-    @computed_field
-    @cached_property
-    def char(self) -> str:
-        return self.decode()
-
-    def __str__(self) -> str:
-        return f"{self.char} ({self.idx})"
 
 
 class ManualTransformer(BaseModel):
@@ -43,9 +27,9 @@ class ManualTransformer(BaseModel):
             self.total += 1
             if self.untok(self.predict(ctx)) == expected:
                 self.correct += 1
-        self.send_report()
+        self.emit_report()
 
-    def send_report(self) -> None:
+    def emit_report(self) -> None:
         if self.report:
             pct = self.correct / self.total * 100
             print(f"ACCURACY: {pct}% ({self.correct} / {self.total})")
@@ -64,7 +48,9 @@ class ManualTransformer(BaseModel):
         return Token(idx=idx, vocab=self.vocab)
 
     def generate(self, tokens: list[int]):
-        logits = GPT(inputs=np.array(tokens), **self.config.model_dump()).generate()
+        model_config = self.config.model_dump()
+        transformer_model = GPT(inputs=np.array(tokens), **model_config)
+        logits = transformer_model.generate()
         return logits
 
     def normalise(self, x):
