@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-from pydantic import BaseModel
 
 from ..attention.block import AttentionBlock, AttentionConfig
 from ..attention.main import Attention
@@ -30,26 +29,10 @@ class CausalSelfAttention(AttentionConfig, Operation):
 class TransformerBlock(AttentionBlock, Operation):
     def process(self) -> np.ndarray:
         """[n_seq, n_embd] -> [n_seq, n_embd]"""
-        a = CausalSelfAttention(x=self.x, **self.attn.model_dump())
+        a = CausalSelfAttention(
+            x=self.x,
+            c_attn=self.attn.c_attn,
+            c_proj=self.attn.c_proj,
+        )
         # NOTE: removed ffn
         return self.x + a.self_attend()
-
-
-class GPT(BaseModel, arbitrary_types_allowed=True):
-    inputs: np.ndarray
-    wte: np.ndarray
-    wpe: np.ndarray
-    blocks: list[AttentionBlock]
-    """
-    [n_seq] -> [n_seq, n_vocab]
-    """
-
-    def generate(self):
-        # token + positional embeddings: [n_seq] -> [n_seq, n_embd]
-        x = self.wte[self.inputs] + self.wpe[range(len(self.inputs))]
-        # forward pass through n_layer transformer blocks
-        for block in self.blocks:
-            # [n_seq, n_embd] -> [n_seq, n_embd]
-            x = TransformerBlock(x=x, attn=block.attn).process()
-        # projection to vocab: [n_seq, n_embd] -> [n_seq, n_vocab]
-        return x @ self.wte.T

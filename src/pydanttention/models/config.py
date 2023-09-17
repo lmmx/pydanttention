@@ -1,12 +1,37 @@
+from typing import ClassVar
+
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .attention.block import AttentionBlock, AttentionConfig, AttentionWeights
 
 __all__ = ["Config"]
 
 
-class Config(BaseModel, arbitrary_types_allowed=True):
+class DefaultParameters:
+    """
+    Purely used within the field defaults in the `Config` class.
+    """
+
+    N_EMBED: ClassVar[int] = 8
+    Lg: ClassVar[int] = 1024  # "Large"
+
+
+# Assign the Lg default parameter into the global scope so the Config default value can
+# use it (accessing a full class attribute path would disrupt the nice neat formatting!)
+Lg = DefaultParameters.Lg
+
+
+class ModelFieldDefaults(BaseModel):
+    """
+    Only `N_CTX` is used at runtime (as the tokenization tail size) so must be set on
+    the `Config` data model, and thus by extension on the `ManualTransformer`.
+    """
+
+    n_ctx: int = Field(5, exclude=True)
+
+
+class Config(ModelFieldDefaults, arbitrary_types_allowed=True):
     """
     EMBEDDING USAGE
      P = Position embeddings (one-hot)
@@ -16,10 +41,6 @@ class Config(BaseModel, arbitrary_types_allowed=True):
     [P, P, P, P, P, T, T, V]
     """
 
-    N_CTX: int = 5
-    N_VOCAB: int = 2
-    N_EMBED: int = 8
-    Lg: int = 1024  # Large
     wte: np.ndarray = np.array(
         # one-hot token embeddings
         [
@@ -42,7 +63,7 @@ class Config(BaseModel, arbitrary_types_allowed=True):
             attn=AttentionConfig(
                 c_attn=AttentionWeights(
                     # generates qkv matrix
-                    b=np.zeros(N_EMBED * 3),
+                    b=np.zeros(DefaultParameters.N_EMBED * 3),
                     w=np.array(
                         # this is where the magic happens
                         # fmt: off

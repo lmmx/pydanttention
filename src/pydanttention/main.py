@@ -4,9 +4,9 @@ import numpy as np
 from pydantic import BaseModel
 
 from .models.config import Config
-from .models.ops.main import GPT
 from .models.ops.simple import Softmax
 from .models.tokens import Token
+from .models.transformer import GPT
 
 __all__ = ["ManualTransformer"]
 
@@ -57,7 +57,7 @@ class ManualTransformer(BaseModel):
         return Softmax(x=x).normalise()
 
     def tokenize(self, string: str) -> list[int]:
-        ctx_tail = -(self.config.N_CTX)
+        ctx_tail = -(self.config.n_ctx)
         tail = string[ctx_tail:]
         return [self.vocab.index(char) for char in tail]
 

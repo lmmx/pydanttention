@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from pydantic import BaseModel
 
-from .ops.main import TransformerBlock
+from .ops.main import AttentionBlock, TransformerBlock
 
 __all__ = ["GPT"]
 
@@ -12,7 +12,7 @@ class GPT(BaseModel, arbitrary_types_allowed=True):
     inputs: np.ndarray
     wte: np.ndarray
     wpe: np.ndarray
-    blocks: list
+    blocks: list[AttentionBlock]
     """
     [n_seq] -> [n_seq, n_vocab]
     """
@@ -23,6 +23,6 @@ class GPT(BaseModel, arbitrary_types_allowed=True):
         # forward pass through n_layer transformer blocks
         for block in self.blocks:
             # [n_seq, n_embd] -> [n_seq, n_embd]
-            x = TransformerBlock.model_validate(dict(x=x, **block)).process()
+            x = TransformerBlock(x=x, attn=block.attn).process()
         # projection to vocab: [n_seq, n_embd] -> [n_seq, n_vocab]
         return x @ self.wte.T
