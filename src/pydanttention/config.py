@@ -9,14 +9,9 @@ class AttentionWeights(BaseModel, arbitrary_types_allowed=True):
     b: list[float]
 
 
-class AttentionProjection(BaseModel, arbitrary_types_allowed=True):
-    w: np.ndarray
-    b: list[float]
-
-
 class AttentionConfig(BaseModel):
-    c_attn: AttentionWeights
-    c_proj: AttentionProjection
+    c_attn: AttentionWeights  # qkv queries
+    c_proj: AttentionWeights  # projection
 
 
 class AttentionBlock(BaseModel):
@@ -55,14 +50,14 @@ class Config(BaseModel, arbitrary_types_allowed=True):
         ],
     )
     blocks: list[AttentionBlock] = [
-        AttentionBlock.model_validate(
-            {
-                "attn": {
-                    "c_attn": {  # generates qkv matrix
-                        "b": np.zeros(N_EMBED * 3),
-                        "w": np.array(
-                            # this is where the magic happens
-                            # fmt: off
+        AttentionBlock(
+            attn=AttentionConfig(
+                c_attn=AttentionWeights(
+                    # generates qkv matrix
+                    b=np.zeros(N_EMBED * 3),
+                    w=np.array(
+                        # this is where the magic happens
+                        # fmt: off
                         [
                           [
                               Lg, 0., 0., 0., 0., 0., 0., 0.,  # q
@@ -105,25 +100,25 @@ class Config(BaseModel, arbitrary_types_allowed=True):
                               0., 0., 0., 0., 0., 0., 0., 0.,  # v
                           ],
                         ],
-                            # fmt: on
-                        ),
-                    },
-                    "c_proj": {  # weights to project attn result back to embedding space
-                        "b": [0, 0, 0, 0, 0, Lg, 0, 0],
-                        "w": np.array(
-                            [
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0, -Lg, Lg, 0],
-                            ],
-                        ),
-                    },
-                },
-            }
-        ),
+                        # fmt: on
+                    ),
+                ),
+                c_proj=AttentionWeights(
+                    # weights to project attn result back to embedding space
+                    b=[0, 0, 0, 0, 0, Lg, 0, 0],
+                    w=np.array(
+                        [
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, -Lg, Lg, 0],
+                        ],
+                    ),
+                ),
+            )
+        )
     ]
