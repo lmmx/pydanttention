@@ -4,6 +4,25 @@ from pydantic import BaseModel
 __all__ = ["Config"]
 
 
+class AttentionWeights(BaseModel, arbitrary_types_allowed=True):
+    w: np.ndarray
+    b: list[float]
+
+
+class AttentionProjection(BaseModel, arbitrary_types_allowed=True):
+    w: np.ndarray
+    b: list[float]
+
+
+class AttentionConfig(BaseModel):
+    c_attn: AttentionWeights
+    c_proj: AttentionProjection
+
+
+class AttentionBlock(BaseModel):
+    attn: AttentionConfig
+
+
 class Config(BaseModel, arbitrary_types_allowed=True):
     """
     EMBEDDING USAGE
@@ -35,14 +54,15 @@ class Config(BaseModel, arbitrary_types_allowed=True):
             [0, 0, 0, 0, 1, 0, 0, 0],  # position 4
         ],
     )
-    blocks: list = [
-        {
-            "attn": {
-                "c_attn": {  # generates qkv matrix
-                    "b": np.zeros(N_EMBED * 3),
-                    "w": np.array(
-                        # this is where the magic happens
-                        # fmt: off
+    blocks: list[AttentionBlock] = [
+        AttentionBlock.model_validate(
+            {
+                "attn": {
+                    "c_attn": {  # generates qkv matrix
+                        "b": np.zeros(N_EMBED * 3),
+                        "w": np.array(
+                            # this is where the magic happens
+                            # fmt: off
                         [
                           [
                               Lg, 0., 0., 0., 0., 0., 0., 0.,  # q
@@ -85,24 +105,25 @@ class Config(BaseModel, arbitrary_types_allowed=True):
                               0., 0., 0., 0., 0., 0., 0., 0.,  # v
                           ],
                         ],
-                        # fmt: on
-                    ),
+                            # fmt: on
+                        ),
+                    },
+                    "c_proj": {  # weights to project attn result back to embedding space
+                        "b": [0, 0, 0, 0, 0, Lg, 0, 0],
+                        "w": np.array(
+                            [
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, -Lg, Lg, 0],
+                            ],
+                        ),
+                    },
                 },
-                "c_proj": {  # weights to project attn result back to embedding space
-                    "b": [0, 0, 0, 0, 0, Lg, 0, 0],
-                    "w": np.array(
-                        [
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, -Lg, Lg, 0],
-                        ],
-                    ),
-                },
-            },
-        },
+            }
+        ),
     ]
