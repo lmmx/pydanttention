@@ -54,9 +54,6 @@ class ManualTransformer(BaseModel):
     def untok(self, tok_idx: int) -> str:
         return self.vocab[tok_idx]
 
-    def tokenize(self, value: str):
-        return tokenize(value, vocab=self.vocab)
-
     def log(self, log_entry: str) -> None:
         self.logs.append(log_entry)
         if self.report:
@@ -78,12 +75,12 @@ class ManualTransformer(BaseModel):
         tail = string[ctx_tail:]
         return [self.vocab.index(char) for char in tail]
 
-    def predict(self, string: s) -> int:
+    def predict(self, string: str) -> int:
         tokens = self.tokenize(string)
         logits = self.generate(tokens)
         probs = self.normalise(logits)
         for i, (current_idx, token_probs, raw_logits) in enumerate(
-            zip(tokens, probs, logits)
+            zip(tokens, probs, logits),
         ):
             next_idx = np.argmax(token_probs)
             current, pred = map(self.make_token, (current_idx, next_idx))

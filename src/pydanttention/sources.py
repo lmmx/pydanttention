@@ -4,11 +4,12 @@ import numpy as np
 from pydantic import BaseModel
 
 __all__ = [
-    "softmax",
-    "linear",
-    "attention",
-    "causal_self_attention",
-    "transformer_block",
+    "Operation",
+    "Softmax",
+    "Linear",
+    "Attention",
+    "CausalSelfAttention",
+    "TransformerBlock",
     "GPT",
 ]
 
@@ -88,7 +89,7 @@ class TransformerBlock(Operation, arbitrary_types_allowed=True):
         return (
             self.x
             + CausalSelfAttention.model_validate(
-                dict(x=self.x, **self.attn)
+                dict(x=self.x, **self.attn),
             ).self_attend()
         )
 
