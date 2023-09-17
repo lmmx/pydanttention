@@ -3,21 +3,19 @@ from __future__ import annotations
 import numpy as np
 from pydantic import BaseModel
 
+from ..attention.block import AttentionBlock, AttentionConfig, AttentionWeights
 from ..attention.main import Attention
 from .base import Operation
 from .simple import Linear
 
-__all__ = ["CausalSelfAttention", "TransformerBlock", "GPT"]
+__all__ = ["CausalSelfAttention", "TransformerBlock"]
 
 
-class CausalSelfAttention(Operation, arbitrary_types_allowed=True):
-    c_attn: dict  # np.ndarray # TODO make a model type
-    c_proj: dict  # np.ndarray # TODO make a model type
-
+class CausalSelfAttention(AttentionConfig, Operation):
     def self_attend(self) -> np.ndarray:
         """[n_seq, n_embd] -> [n_seq, n_embd]"""
         # qkv projections: [n_seq, n_embd] -> [n_seq, 3*n_embd]
-        x = Linear.model_validate(dict(x=self.x, **self.c_attn)).project()
+        x = Linear(x=self.x, w=self.c_attn.w, b=self.c_attn.b).project()
         # split into qkv: [n_seq, 3*n_embd] -> 3 of [n_seq, n_embd]
         q, k, v = np.split(x, 3, axis=-1)
         # causal mask to hide future inputs from being attended to
@@ -25,29 +23,23 @@ class CausalSelfAttention(Operation, arbitrary_types_allowed=True):
         # perform causal self attention: [n_seq, n_embd] -> [n_seq, n_embd]
         x = Attention(q=q, k=k, v=v, mask=causal_mask).attend()
         # out projection: [n_seq, n_embd] @ [n_embd, n_embd] = [n_seq, n_embd]
-        x = Linear.model_validate(dict(x=x, **self.c_proj)).project()
+        x = Linear(x=x, w=self.c_proj.w, b=self.c_proj.b).project()
         return x
 
 
-class TransformerBlock(Operation, arbitrary_types_allowed=True):
-    attn: dict  # np.ndarray # TODO make this another model type
-
+class TransformerBlock(AttentionBlock, Operation):
     def process(self) -> np.ndarray:
         """[n_seq, n_embd] -> [n_seq, n_embd]"""
+        a = CausalSelfAttention(x=self.x, **self.attn.model_dump())
         # NOTE: removed ffn
-        return (
-            self.x
-            + CausalSelfAttention.model_validate(
-                dict(x=self.x, **self.attn),
-            ).self_attend()
-        )
+        return self.x + a.self_attend()
 
 
 class GPT(BaseModel, arbitrary_types_allowed=True):
     inputs: np.ndarray
     wte: np.ndarray
     wpe: np.ndarray
-    blocks: list
+    blocks: list[AttentionBlock]
     """
     [n_seq] -> [n_seq, n_vocab]
     """
@@ -58,6 +50,6 @@ class GPT(BaseModel, arbitrary_types_allowed=True):
         # forward pass through n_layer transformer blocks
         for block in self.blocks:
             # [n_seq, n_embd] -> [n_seq, n_embd]
-            x = TransformerBlock.model_validate(dict(x=x, **block)).process()
+            x = TransformerBlock(x=x, attn=block.attn).process()
         # projection to vocab: [n_seq, n_embd] -> [n_seq, n_vocab]
         return x @ self.wte.T
