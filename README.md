@@ -45,7 +45,7 @@ Rewriting AI model source code as Pydantic data models is an interesting exercis
 
 ## Installation
 
-```
+```py
 pip install pydanttention
 ```
 
