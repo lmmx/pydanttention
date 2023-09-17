@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from pydantic import BaseModel
 
-from .config import Config
+from .models.config import Config
 from .models.ops.main import GPT
 from .models.ops.simple import Softmax
 from .models.tokens import Token
