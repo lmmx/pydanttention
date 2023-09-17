@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-from pydantic import BaseModel
 
 from .models.config import Config
 from .models.ops.simple import Softmax
@@ -11,14 +10,13 @@ from .models.transformer import GPT
 __all__ = ["ManualTransformer"]
 
 
-class ManualTransformer(BaseModel):
+class ManualTransformer(Config):
     test: str = "aab" * 10
     vocab: list[str] = list("ab")
     total: int = 0
     correct: int = 0
     report: bool = False
     logs: list[str] = []
-    config: Config = Config()
 
     def run(self) -> None:
         for i in range(2, len(self.test) - 1):
@@ -48,16 +46,16 @@ class ManualTransformer(BaseModel):
         return Token(idx=idx, vocab=self.vocab)
 
     def generate(self, tokens: list[int]):
-        model_config = self.config.model_dump()
-        transformer_model = GPT(inputs=np.array(tokens), **model_config)
-        logits = transformer_model.generate()
+        inputs = np.array(tokens)
+        model = GPT(inputs=inputs, wte=self.wte, wpe=self.wpe, blocks=self.blocks)
+        logits = model.generate()
         return logits
 
     def normalise(self, x):
         return Softmax(x=x).normalise()
 
     def tokenize(self, string: str) -> list[int]:
-        ctx_tail = -(self.config.n_ctx)
+        ctx_tail = -(self.n_ctx)
         tail = string[ctx_tail:]
         return [self.vocab.index(char) for char in tail]
 
