@@ -25,7 +25,7 @@ Lg = DefaultParameters.Lg
 class ModelFieldDefaults(BaseModel):
     """
     Only `N_CTX` is used at runtime (as the tokenization tail size) so must be set on
-    the `Config` data model, and thus by extension on the `ManualTransformer`.
+    the `Config` data model, and thus by extension on the `Transformer`.
     """
 
     n_ctx: int = Field(5, exclude=True)

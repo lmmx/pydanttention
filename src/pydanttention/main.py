@@ -7,10 +7,10 @@ from .models.ops.simple import Softmax
 from .models.tokens import Token
 from .models.transformer import GPT
 
-__all__ = ["ManualTransformer"]
+__all__ = ["Transformer"]
 
 
-class ManualTransformer(Config):
+class Transformer(Config):
     test: str = "aab" * 10
     vocab: list[str] = list("ab")
     total: int = 0
