@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from pydantic import BaseModel
 
-from ..attention.block import AttentionBlock, AttentionConfig, AttentionWeights
+from ..attention.block import AttentionBlock, AttentionConfig
 from ..attention.main import Attention
 from .base import Operation
 from .simple import Linear
