@@ -6,7 +6,7 @@ import numpy as np
 from pydantic import BaseModel, Field, computed_field
 
 from .config import Config
-from .sources import GPT, softmax
+from .sources import GPT, Softmax
 
 __all__ = ["ManualTransformer"]
 
@@ -79,7 +79,7 @@ class ManualTransformer(BaseModel):
     def predict(self, string: s) -> int:
         tokens = self.tokenize(string)
         logits = self.gpt(tokens)
-        probs = softmax(logits)
+        probs = Softmax(x=logits).normalise()
         for i, (current_idx, token_probs, raw_logits) in enumerate(
             zip(tokens, probs, logits)
         ):
