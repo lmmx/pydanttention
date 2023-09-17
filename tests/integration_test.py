@@ -1,4 +1,4 @@
-from pydanttention.main import Transformer
+from pydanttention import Transformer
 
 
 def test_implementation():
