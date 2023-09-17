@@ -14,3 +14,18 @@ Adapted from the source by Theia Vogel (MIT licensed, included here as `vogel_ma
 - [I made a transformer by hand (no training!)](https://vgel.me/posts/handmade-transformer/) (2023)
 
 In turn using model ops from [picoGPT](https://github.com/jaymody/picoGPT/blob/main/gpt2.py) (MIT license)
+
+## Motivation
+
+Rewriting AI model source code as Pydantic data models is an interesting exercise. I'd note the following benefits.
+
+- All operations can be subclassed from an arbitrary `Operation` model (see `.models.ops.base`),
+  i.e. they all expect their first argument to be a numpy array `x`. This naturally allows you to
+  factor your code around a category of 'operations'.
+
+- Since all functions get turned into a class (a Pydantic data model with type-annotated fields for
+  input state rather than funcdef kw/args), and classes are conventionally named in `PascalCase` whereas functions
+  (like all other Python variables) are conventionally named in `snake_case`, you can easily observe from case alone
+  where significant operations are called, as well as where the data model is referenced (by `self.{field}`) making
+  these 2 types of data access distinct from the intermediate variables. This gives a better sense
+  at a glance of data flow through your program.
