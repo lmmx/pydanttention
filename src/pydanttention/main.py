@@ -45,9 +45,8 @@ class Transformer(Config):
     def make_token(self, idx: int) -> Token:
         return Token(idx=idx, vocab=self.vocab)
 
-    def generate(self, tokens: list[int]):
-        inputs = np.array(tokens)
-        model = GPT(inputs=inputs, wte=self.wte, wpe=self.wpe, blocks=self.blocks)
+    def generate(self, tokens: list[int] | np.array):
+        model = GPT(inputs=tokens, wte=self.wte, wpe=self.wpe, blocks=self.blocks)
         logits = model.generate()
         return logits
 

@@ -9,7 +9,7 @@ __all__ = ["GPT"]
 
 
 class GPT(BaseModel, arbitrary_types_allowed=True):
-    inputs: np.ndarray
+    inputs: list[int] | np.ndarray
     wte: np.ndarray
     wpe: np.ndarray
     blocks: list[AttentionBlock]

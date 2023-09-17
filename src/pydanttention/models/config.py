@@ -18,7 +18,7 @@ class DefaultParameters:
 
 
 # Assign the Lg default parameter into the global scope so the Config default value can
-# use it (accessing a full class attribute path would disrupt the nice neat formatting!)
+# use it (accessing a full class attribute path would disrupt the nice formatting)
 Lg = DefaultParameters.Lg
 
 
@@ -33,6 +33,8 @@ class ModelFieldDefaults(BaseModel):
 
 class Config(ModelFieldDefaults, arbitrary_types_allowed=True):
     """
+    One-hot encoded token (WTE) and position embeddings (WPE), and attention blocks.
+
     EMBEDDING USAGE
      P = Position embeddings (one-hot)
      T = Token embeddings (one-hot, first is `a`, second is `b`)
