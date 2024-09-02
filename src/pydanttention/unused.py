@@ -1,6 +1,7 @@
 """
 I didn't keep this in the loop during development, but can pick it up once finished.
 """
+
 import numpy as np
 
 from .constants import MODEL
