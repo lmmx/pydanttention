@@ -30,6 +30,11 @@ license = {text = "MIT"}
 [project.urls]
 Homepage = "https://github.com/lmmx/pydanttention"
 Repository = "https://github.com/lmmx/pydanttention.git"
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.1.0",
+]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
