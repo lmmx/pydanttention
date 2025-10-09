@@ -29,8 +29,8 @@ repos:
       - id: autopep8
         args: ["--in-place", "--max-line-length=88", "--ignore=E203"]
   # E203 edits `data[len("CDATA[") :]` to `data[len("CDATA["):]` and black does opposite
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.9.0
     hooks:
       - id: black
         args: ["--line-length=88"]
@@ -51,7 +51,7 @@ repos:
   #       #     |^pandas/conftest\.py  # keep excluded
   #       # args: [--disable=all, --enable=redefined-outer-name]
   - repo: https://github.com/PyCQA/isort
-    rev: 6.0.1
+    rev: 6.1.0
     hooks:
       - id: isort
         additional_dependencies: [toml]
