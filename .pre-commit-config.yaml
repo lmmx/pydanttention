@@ -30,7 +30,7 @@ repos:
         args: ["--in-place", "--max-line-length=88", "--ignore=E203"]
   # E203 edits `data[len("CDATA[") :]` to `data[len("CDATA["):]` and black does opposite
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.11.0
+    rev: 25.12.0
     hooks:
       - id: black
         args: ["--line-length=88"]
